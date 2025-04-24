@@ -14,7 +14,7 @@ const urlsToCache = [
 // ----------- INSTALL ----------
 self.addEventListener('install', event => {
   console.log('[Service Worker] Installing...');
-  self.skipWaiting(); // Skip waiting to activate new SW immediately
+  self.skipWaiting(); // Force SW to activate immediately
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
@@ -23,7 +23,7 @@ self.addEventListener('install', event => {
 // ----------- ACTIVATE ----------
 self.addEventListener('activate', event => {
   console.log('[Service Worker] Activating...');
-  // self.clientsClaim(); // Take control of pages immediately
+  self.clients.claim(); // Immediately control all open clients/pages
   event.waitUntil(
     caches.keys().then(cacheNames =>
       Promise.all(
@@ -87,7 +87,7 @@ async function syncOfflineRequests() {
       }
     }
 
-    // Notify user once all offline requests are synced
+    // Show notification once all are synced
     if (self.registration.showNotification) {
       self.registration.showNotification('Offline Requests Synced!', {
         body: 'All your saved flight requests were submitted.',
@@ -106,6 +106,6 @@ function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('AeroDB', 2);
     request.onsuccess = e => resolve(e.target.result);
-    request.onerror = e => reject('IndexedDB open failed');
+    request.onerror = () => reject('IndexedDB open failed');
   });
 }
