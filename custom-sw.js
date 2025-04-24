@@ -1,4 +1,4 @@
-const CACHE_NAME = 'new-flightinfo-pwa-v1';
+const CACHE_NAME = 'new-flightinfo-pwa-v1.2';
 
 const urlsToCache = [
   '/',
@@ -11,19 +11,18 @@ const urlsToCache = [
   '/static/js/main.js'
 ];
 
-// ----------- INSTALL ----------
+// Immediately activate this service worker upon installation
 self.addEventListener('install', event => {
   console.log('[Service Worker] Installing...');
-  self.skipWaiting(); // Force SW to activate immediately
+  self.skipWaiting(); // ⚡ Forces the new SW to activate without waiting
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
-// ----------- ACTIVATE ----------
+// Take control of all open pages immediately after activation
 self.addEventListener('activate', event => {
   console.log('[Service Worker] Activating...');
-  self.clients.claim(); // Immediately control all open clients/pages
   event.waitUntil(
     caches.keys().then(cacheNames =>
       Promise.all(
@@ -33,16 +32,17 @@ self.addEventListener('activate', event => {
       )
     )
   );
+  return self.clients.claim(); // 🧠 Controls all clients/pages immediately
 });
 
-// ----------- FETCH ----------
+// Cache-first strategy for fetch requests
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
   );
 });
 
-// ----------- SYNC EVENT ----------
+// Handle Background Sync
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-requests') {
     console.log('[Service Worker] Sync event triggered for saved requests');
@@ -50,10 +50,9 @@ self.addEventListener('sync', event => {
   }
 });
 
-// ----------- SYNC FUNCTION ----------
+// Sync offline requests stored in IndexedDB
 async function syncOfflineRequests() {
   console.log('[Service Worker] Trying to sync offline requests...');
-
   try {
     const db = await openDatabase();
     const tx = db.transaction('requests', 'readonly');
@@ -87,7 +86,6 @@ async function syncOfflineRequests() {
       }
     }
 
-    // Show notification once all are synced
     if (self.registration.showNotification) {
       self.registration.showNotification('Offline Requests Synced!', {
         body: 'All your saved flight requests were submitted.',
@@ -101,7 +99,7 @@ async function syncOfflineRequests() {
   }
 }
 
-// ----------- OPEN IndexedDB ----------
+// Helper function to open IndexedDB
 function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('AeroDB', 2);
