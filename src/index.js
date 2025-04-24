@@ -14,7 +14,7 @@ root.render(
 // Workbox service worker registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/custom-sw.js')
+    navigator.serviceWorker.register('https://khanarshad5648.github.io/flightinfo-pwa-17-apr-25/custom-sw.js')
       .then(reg => {
         console.log('Custom SW registered:', reg);
       })
