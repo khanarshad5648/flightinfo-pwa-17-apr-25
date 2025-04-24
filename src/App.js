@@ -36,7 +36,7 @@ function App() {
 
     const fetchFlights = async () => {
       try {
-        const response = await fetch('https://api.aviationstack.com/v1/flights?access_key=ed165870bb901c6ec010da13842ac565');
+        const response = await fetch('https://api.aviationstack.com/v1/flights?access_key=0c6efb80142da26eb0f6462d9598f1b3');
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
         setFlights(data.data.slice(0, 10));
