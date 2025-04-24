@@ -1,14 +1,16 @@
 const CACHE_NAME = 'new-flightinfo-pwa-v1.2';
 
+const BASE = self.location.pathname.replace(/\/[^/]*$/, '');
+
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png',
-  '/manifest.json',
-  '/static/css/main.css',
-  '/static/js/main.js'
+  `${BASE}/`,
+  `${BASE}/index.html`,
+  `${BASE}/favicon.ico`,
+  `${BASE}/logo192.png`,
+  `${BASE}/logo512.png`,
+  `${BASE}/manifest.json`,
+  `${BASE}/static/css/main.css`,
+  `${BASE}/static/js/main.js`,
 ];
 
 // Immediately activate this service worker upon installation
