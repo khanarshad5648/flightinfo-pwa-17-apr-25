@@ -1,5 +1,6 @@
-const CACHE_NAME = 'new-flightinfo-pwa-v1.2';
+const CACHE_NAME = 'new-flightinfo-pwa-v1.3';
 
+// Dynamically determine the base path when deployed under a subdirectory (like GitHub Pages)
 const BASE = self.location.pathname.replace(/\/[^/]*$/, '');
 
 const urlsToCache = [
@@ -10,19 +11,22 @@ const urlsToCache = [
   `${BASE}/logo512.png`,
   `${BASE}/manifest.json`,
   `${BASE}/static/css/main.css`,
-  `${BASE}/static/js/main.js`,
+  `${BASE}/static/js/main.js`
 ];
 
-// Immediately activate this service worker upon installation
+// ---------- INSTALL ----------
 self.addEventListener('install', event => {
   console.log('[Service Worker] Installing...');
-  self.skipWaiting(); // ⚡ Forces the new SW to activate without waiting
+  self.skipWaiting(); // Activate immediately without waiting
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[Service Worker] Caching app shell...');
+      return cache.addAll(urlsToCache);
+    }).catch(err => console.error('[Service Worker] Cache addAll failed:', err))
   );
 });
 
-// Take control of all open pages immediately after activation
+// ---------- ACTIVATE ----------
 self.addEventListener('activate', event => {
   console.log('[Service Worker] Activating...');
   event.waitUntil(
@@ -34,17 +38,21 @@ self.addEventListener('activate', event => {
       )
     )
   );
-  return self.clients.claim(); // 🧠 Controls all clients/pages immediately
+  return self.clients.claim(); // Take control of clients immediately
 });
 
-// Cache-first strategy for fetch requests
+// ---------- FETCH ----------
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+      .catch(() => {
+        console.warn('[Service Worker] Fetch failed for:', event.request.url);
+      })
   );
 });
 
-// Handle Background Sync
+// ---------- SYNC ----------
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-requests') {
     console.log('[Service Worker] Sync event triggered for saved requests');
@@ -52,7 +60,7 @@ self.addEventListener('sync', event => {
   }
 });
 
-// Sync offline requests stored in IndexedDB
+// ---------- SYNC OFFLINE REQUESTS ----------
 async function syncOfflineRequests() {
   console.log('[Service Worker] Trying to sync offline requests...');
   try {
@@ -91,7 +99,7 @@ async function syncOfflineRequests() {
     if (self.registration.showNotification) {
       self.registration.showNotification('Offline Requests Synced!', {
         body: 'All your saved flight requests were submitted.',
-        icon: '/logo192.png'
+        icon: `${BASE}/logo192.png`
       });
     }
 
@@ -101,7 +109,7 @@ async function syncOfflineRequests() {
   }
 }
 
-// Helper function to open IndexedDB
+// ---------- OPEN IndexedDB ----------
 function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('AeroDB', 2);
